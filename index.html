@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Safe LPG Gas Bill</title>
+
+<style>
+    *{
+        margin:0;
+        padding:0;
+        box-sizing:border-box;
+        font-family:Arial, Helvetica, sans-serif;
+    }
+
+    body{
+        background:#f5f5f5;
+        padding:20px;
+    }
+
+    /* Page holding 4 bills in a 2x2 grid, sized for A4 */
+    .page{
+        width:210mm;
+        min-height:297mm;
+        margin:0 auto 20px auto;
+        background:#fff;
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        grid-template-rows:1fr 1fr;
+        gap:6mm;
+        padding:8mm;
+    }
+
+    .bill{
+        border:2px solid #000;
+        padding:10px;
+        display:flex;
+        flex-direction:column;
+        font-size:12px;
+    }
+
+    .title{
+        text-align:center;
+        font-size:16px;
+        font-weight:bold;
+        border-bottom:2px solid #000;
+        padding-bottom:6px;
+        margin-bottom:8px;
+    }
+
+    table{
+        width:100%;
+        border-collapse:collapse;
+    }
+
+    td{
+        border:1px solid #000;
+        padding:4px 5px;
+        font-size:11.5px;
+    }
+
+    td:first-child{
+        width:48%;
+        font-weight:bold;
+    }
+
+    input{
+        width:100%;
+        border:none;
+        outline:none;
+        font-size:11.5px;
+        background:transparent;
+        font-family:inherit;
+    }
+
+    .note{
+        margin-top:8px;
+        text-align:center;
+        font-size:11px;
+    }
+
+    .footer{
+        margin-top:auto;
+        display:flex;
+        justify-content:space-between;
+        padding-top:20px;
+    }
+
+    .footer div{
+        width:42%;
+        text-align:center;
+        border-top:1px solid #000;
+        padding-top:4px;
+        font-size:11px;
+    }
+
+    .btn-area{
+        text-align:center;
+        margin:20px auto;
+        max-width:210mm;
+    }
+
+    button{
+        padding:10px 20px;
+        font-size:16px;
+        cursor:pointer;
+        margin:5px;
+    }
+
+    /* Print settings: exactly one A4 page per .page, 4 bills each */
+    @media print{
+        body{
+            background:#fff;
+            padding:0;
+        }
+        .btn-area{
+            display:none;
+        }
+        .page{
+            margin:0;
+            box-shadow:none;
+            page-break-after:always;
+        }
+        .page:last-child{
+            page-break-after:auto;
+        }
+    }
+
+    @page{
+        size:A4;
+        margin:0;
+    }
+</style>
+</head>
+<body>
+
+<div class="page" id="page">
+    <!-- 4 bill blocks will be injected here by JS -->
+</div>
+
+<div class="btn-area">
+    <button onclick="calculateAll()">Calculate All</button>
+    <button onclick="window.print()">Print</button>
+    <button onclick="location.reload()">Reset</button>
+</div>
+
+<script>
+const CONVERSION_FACTOR = 2.35;
+const TOTAL_BILLS = 4;
+
+function buildBillHTML(i){
+    return `
+    <div class="bill">
+        <div class="title">SAFE LPG RETICULATION GAS BILL</div>
+        <table>
+            <tr>
+                <td>Building Name</td>
+                <td><input type="text" id="building${i}" value="Safe Garden 1"></td>
+            </tr>
+            <tr>
+                <td>Flat No</td>
+                <td><input type="text" id="flat${i}" value="A-1"></td>
+            </tr>
+            <tr>
+                <td>Month</td>
+                <td><input type="month" id="month${i}"></td>
+            </tr>
+            <tr>
+                <td>Running Unit</td>
+                <td><input type="number" step="0.001" id="running${i}"></td>
+            </tr>
+            <tr>
+                <td>Previous Unit</td>
+                <td><input type="number" step="0.001" id="previous${i}"></td>
+            </tr>
+            <tr>
+                <td>Consume Unit</td>
+                <td><input readonly id="consume${i}"></td>
+            </tr>
+            <tr>
+                <td>Conversion into Kg</td>
+                <td><input readonly id="kg${i}"></td>
+            </tr>
+            <tr>
+                <td>Price per Kg</td>
+                <td><input type="number" id="price${i}" value="142"></td>
+            </tr>
+            <tr>
+                <td>Service Charge</td>
+                <td><input type="number" id="service${i}" value="50"></td>
+            </tr>
+            <tr>
+                <td><b>Total Price</b></td>
+                <td><input readonly id="total${i}" style="color:red;font-weight:bold;"></td>
+            </tr>
+            <tr>
+                <td>Mobile No</td>
+                <td><input type="text" id="mobile${i}" value="0199123123"></td>
+            </tr>
+        </table>
+        <p class="note">Payable bill within on the 5th of every Month</p>
+        <div class="footer">
+            <div>Received By</div>
+            <div>Authorized By</div>
+        </div>
+    </div>`;
+}
+
+function calculate(i){
+    const running = document.getElementById(`running${i}`);
+    const previous = document.getElementById(`previous${i}`);
+    const consume = document.getElementById(`consume${i}`);
+    const kg = document.getElementById(`kg${i}`);
+    const price = document.getElementById(`price${i}`);
+    const service = document.getElementById(`service${i}`);
+    const total = document.getElementById(`total${i}`);
+
+    let runningUnit = parseFloat(running.value) || 0;
+    let previousUnit = parseFloat(previous.value) || 0;
+    let pricePerKg = parseFloat(price.value) || 0;
+    let serviceCharge = parseFloat(service.value) || 0;
+
+    if(runningUnit < previousUnit){
+        consume.value = "";
+        kg.value = "";
+        total.value = "";
+        return;
+    }
+
+    let consumeUnit = runningUnit - previousUnit;
+    consume.value = consumeUnit.toFixed(3);
+
+    let totalKg = consumeUnit * CONVERSION_FACTOR;
+    kg.value = totalKg.toFixed(2);
+
+    let gasBill = totalKg * pricePerKg;
+    let grandTotal = gasBill + serviceCharge;
+    total.value = Math.round(grandTotal);
+}
+
+function calculateAll(){
+    for(let i = 1; i <= TOTAL_BILLS; i++){
+        calculate(i);
+    }
+}
+
+function attachListeners(i){
+    ["running","previous","price","service"].forEach(field=>{
+        document.getElementById(`${field}${i}`).addEventListener("input", ()=>calculate(i));
+    });
+}
+
+// Build page with 4 bills
+const page = document.getElementById("page");
+let html = "";
+for(let i = 1; i <= TOTAL_BILLS; i++){
+    html += buildBillHTML(i);
+}
+page.innerHTML = html;
+
+for(let i = 1; i <= TOTAL_BILLS; i++){
+    attachListeners(i);
+    calculate(i);
+}
+</script>
+
+</body>
+</html>
