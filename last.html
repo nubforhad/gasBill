@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<title>Safe LPG Gas Bill</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+    *{
+        margin:0;
+        padding:0;
+        box-sizing:border-box;
+        font-family:'Inter', 'Segoe UI', Arial, Helvetica, sans-serif;
+    }
+
+    :root{
+        --maroon-deep:#4A0E2C;
+        --maroon-mid:#6E1440;
+        --maroon-bright:#8C1E52;
+        --rose-tint:#FAEEF3;
+        --rose-line:#EBD4E0;
+        --gold:#B9903E;
+        --gold-soft:#E3CA97;
+        --paper:#FFFDFB;
+        --ink:#231A20;
+        --grey:#8C7C86;
+        --red-total:#A21942;
+    }
+
+    html,body{height:100%;}
+
+    body{
+        background:#DED2D9;
+        background-image:
+            radial-gradient(circle at 14% 6%, #E6D4DE 0%, transparent 45%),
+            radial-gradient(circle at 86% 94%, #DCC3D1 0%, transparent 45%);
+        padding:22px;
+    }
+
+    .page{
+        width:210mm;
+        height:297mm;
+        margin:0 auto 24px auto;
+        background:var(--paper);
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        grid-template-rows:1fr 1fr;
+        gap:0;
+        padding:9mm;
+        box-shadow:0 20px 60px rgba(74,14,44,0.20);
+        border-radius:4px;
+        overflow:hidden;
+        position:relative;
+    }
+
+    /* tear-lines between the four bills on a sheet */
+    .page::before,
+    .page::after{
+        content:"";
+        position:absolute;
+        background:repeating-linear-gradient(to bottom, var(--rose-line) 0 6px, transparent 6px 12px);
+        z-index:2;
+    }
+    .page::before{ top:9mm; bottom:9mm; left:50%; width:1px; transform:translateX(-0.5px); }
+    .page::after{
+        background:repeating-linear-gradient(to right, var(--rose-line) 0 6px, transparent 6px 12px);
+        left:9mm; right:9mm; top:50%; height:1px; transform:translateY(-0.5px);
+    }
+
+    /* ====== BILL CARD ====== */
+    .bill{
+        position:relative;
+        display:flex;
+        flex-direction:column;
+        font-size:11px;
+        overflow:hidden;
+        background:var(--paper);
+        height:100%;
+    }
+    .bill:nth-child(1){ padding:0 4mm 4mm 0; }
+    .bill:nth-child(2){ padding:0 0 4mm 4mm; }
+    .bill:nth-child(3){ padding:4mm 4mm 0 0; }
+    .bill:nth-child(4){ padding:4mm 0 0 4mm; }
+
+    .bill-inner{
+        position:relative;
+        border:1px solid var(--rose-line);
+        border-radius:8px;
+        flex:1;
+        display:flex;
+        flex-direction:column;
+        overflow:hidden;
+        box-shadow:0 4px 14px rgba(74,14,44,0.08);
+    }
+
+    /* Watermark - uploaded SAFE logo */
+    .bill-inner::before{
+        content:"";
+        position:absolute;
+        inset:0;
+        background-image:url('edit_lpg_logo.png');
+        background-repeat:no-repeat;
+        background-position:center 62%;
+        background-size:62% auto;
+        opacity:0.06;
+        pointer-events:none;
+        z-index:0;
+    }
+
+    /* Header */
+    .header{
+        position:relative;
+        z-index:1;
+        background:linear-gradient(135deg, var(--maroon-deep) 0%, var(--maroon-mid) 55%, var(--maroon-bright) 100%);
+        color:#fff;
+        padding:8px 10px;
+        display:flex;
+        align-items:center;
+        gap:9px;
+        border-bottom:3px solid var(--gold);
+    }
+
+    .header .logo-box{
+        background:#fff;
+        border-radius:6px;
+        padding:4px 7px;
+        display:flex;
+        align-items:center;
+        flex-shrink:0;
+        box-shadow:0 2px 6px rgba(0,0,0,0.22);
+    }
+
+    .header .logo-box img{ height:22px; width:auto; display:block; }
+
+    .header .head-text{ flex:1; line-height:1.15; min-width:0; }
+
+    .header .brand{
+        font-family:'Fraunces', Georgia, serif;
+        font-size:14.5px;
+        font-weight:700;
+        letter-spacing:0.2px;
+    }
+
+    .header .sub{
+        font-size:8px;
+        letter-spacing:0.3px;
+        opacity:0.82;
+        margin-top:2px;
+    }
+
+    .header .bill-tag{
+        font-size:7.5px;
+        background:var(--gold);
+        color:#3a1f00;
+        padding:3px 7px;
+        border-radius:3px;
+        font-weight:700;
+        letter-spacing:0.6px;
+        text-transform:uppercase;
+        white-space:nowrap;
+        flex-shrink:0;
+    }
+
+    /* Identity strip: building / flat / month, side by side like an invoice header */
+    .id-strip{
+        position:relative;
+        z-index:1;
+        display:grid;
+        grid-template-columns:1.3fr 0.9fr 0.9fr;
+        border-bottom:1px solid var(--rose-line);
+        background:var(--rose-tint);
+    }
+    .id-field{
+        padding:5px 8px;
+        border-right:1px solid var(--rose-line);
+    }
+    .id-field:last-child{ border-right:none; }
+    .id-field label{
+        display:block;
+        font-size:7px;
+        color:var(--maroon-bright);
+        font-weight:600;
+        letter-spacing:0.2px;
+        margin-bottom:1px;
+    }
+    .id-field input,
+    .id-field select{
+        width:100%;
+        border:none;
+        outline:none;
+        background:transparent;
+        font-family:inherit;
+        font-size:10px;
+        font-weight:600;
+        color:var(--ink);
+        padding:0;
+    }
+    .id-field select{ cursor:pointer; }
+
+    /* Body */
+    .body{
+        position:relative;
+        z-index:1;
+        padding:7px 9px 6px 9px;
+        flex:1;
+        display:flex;
+        flex-direction:column;
+        min-height:0;
+    }
+
+    table{ width:100%; border-collapse:collapse; background:transparent; }
+
+    td{
+        padding:3.6px 7px;
+        font-size:10.2px;
+        line-height:1.15;
+        border-bottom:1px solid #F1E4EB;
+        vertical-align:middle;
+        background:rgba(255,255,255,0.6);
+    }
+
+    tr:nth-child(even) td{ background:rgba(250,238,243,0.55); }
+
+    td:first-child{
+        width:46%;
+        font-weight:500;
+        color:var(--maroon-mid);
+        border-right:1px solid #F1E4EB;
+    }
+
+    td:last-child input{ color:var(--ink); font-weight:600; }
+
+    input{
+        width:100%;
+        border:none;
+        outline:none;
+        font-size:10.5px;
+        line-height:1.15;
+        background:transparent;
+        font-family:inherit;
+        padding:1px 0;
+    }
+
+    /* Total row highlight */
+    tr.total-row td{
+        background:linear-gradient(90deg, rgba(250,238,243,0.9), rgba(255,255,255,0.9));
+        border-top:1.6px solid var(--gold);
+        border-bottom:1.6px solid var(--gold);
+        padding:5.5px 7px;
+    }
+
+    tr.total-row td:first-child{
+        color:var(--maroon-deep);
+        font-weight:700;
+        font-size:11px;
+        border-right:1px solid var(--gold-soft);
+    }
+
+    tr.total-row input{
+        color:var(--red-total) !important;
+        font-weight:800 !important;
+        font-size:13px !important;
+        letter-spacing:0.2px;
+    }
+
+    .note{
+        margin-top:10px;
+        text-align:center;
+        font-size:8.5px;
+        color:var(--maroon-mid);
+        background:var(--rose-tint);
+        padding:3.5px 6px;
+        border-radius:4px;
+        font-weight:600;
+        line-height:1.2;
+    }
+
+    .footer{
+        margin-top:auto;
+        padding-top:8px;
+        display:flex;
+        justify-content:space-between;
+        gap:8px;
+        align-items:flex-end;
+    }
+
+    .sign-box{ width:42%; text-align:center; font-size:8.5px; color:var(--grey); }
+
+    .sign-line{
+        border-top:1.2px dashed var(--maroon-mid);
+        padding-top:2px;
+        font-weight:600;
+        color:var(--maroon-deep);
+    }
+
+    .stamp{
+        width:46px;
+        height:46px;
+        border:2px solid var(--gold);
+        border-radius:50%;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        color:var(--maroon-deep);
+        font-size:6.5px;
+        font-weight:700;
+        text-align:center;
+        line-height:1.1;
+        transform:rotate(-8deg);
+        opacity:0.85;
+        flex-shrink:0;
+        background:rgba(185,144,62,0.07);
+    }
+
+    .footer-meta{
+        text-align:center;
+        font-size:6.8px;
+        color:var(--grey);
+        margin-top:5px;
+        letter-spacing:0.2px;
+    }
+
+    /* ====== BUTTONS ====== */
+    .btn-area{
+        text-align:center;
+        margin:26px auto;
+        max-width:210mm;
+        display:flex;
+        justify-content:center;
+        flex-wrap:wrap;
+        gap:10px;
+    }
+
+    button{
+        padding:11px 24px;
+        font-size:14px;
+        cursor:pointer;
+        border:none;
+        border-radius:6px;
+        font-weight:600;
+        letter-spacing:0.3px;
+        color:#fff;
+        background:linear-gradient(135deg, var(--maroon-deep), var(--maroon-bright));
+        box-shadow:0 4px 12px rgba(74,14,44,0.3);
+        transition:transform .15s ease, box-shadow .15s ease;
+    }
+
+    button:hover{ transform:translateY(-2px); box-shadow:0 6px 18px rgba(74,14,44,0.42); }
+
+    button:nth-child(2){ background:linear-gradient(135deg,#1f6b38,#379e51); }
+    button:nth-child(3){ background:linear-gradient(135deg,#8f3434,#c2564f); }
+
+    /* ====== PRINT ====== */
+    @media print{
+        body{ background:#fff; padding:0; }
+        .btn-area{ display:none; }
+        .page{ width:210mm; height:297mm; margin:0; box-shadow:none; border-radius:0; page-break-after:always; }
+        .page:last-child{ page-break-after:auto; }
+        .bill-inner{ box-shadow:none; }
+    }
+
+    @page{ size:A4; margin:0; }
+</style>
+</head>
+<body>
+
+<div class="page" id="page"></div>
+
+<div class="btn-area">
+    <button onclick="calculateAll()">Calculate All</button>
+    <button onclick="window.print()">Print</button>
+    <button onclick="location.reload()">Reset</button>
+</div>
+
+<script>
+const CONVERSION_FACTOR = 2.35;
+const TOTAL_BILLS = 4;
+const LOGO_URL = 'edit_lpg_logo.png';
+const SIGN_URL = 'sign.png';
+const DEFAULT_MONTH = '2026-08'; // August — editable per bill
+
+function buildBillHTML(i){
+    const billNo = String(i).padStart(3,'0');
+    return `
+    <div class="bill">
+      <div class="bill-inner">
+        <div class="header">
+            <div class="logo-box"><img src="${LOGO_URL}" alt="SAFE Community Group"></div>
+            <div class="head-text">
+                <div class="brand">Safe LPG Reticulation</div>
+                <div class="sub">Community Gas Metering Service</div>
+            </div>
+            <div class="bill-tag">Bill #${billNo}</div>
+        </div>
+        <div class="id-strip">
+            <div class="id-field">
+                <label>Building name</label>
+                <input type="text" id="building${i}" value="Safe Garden 1">
+            </div>
+            <div class="id-field">
+                <label>Flat no.</label>
+                <select id="flat${i}">
+                    <option value="">Select</option>
+                    <option value="1A">1A</option><option value="1B">1B</option><option value="1C">1C</option><option value="1D">1D</option><option value="1E">1E</option><option value="1F">1F</option>
+                    <option value="2A">2A</option><option value="2B">2B</option><option value="2C">2C</option><option value="2D">2D</option><option value="2E">2E</option><option value="2F">2F</option>
+                    <option value="3A">3A</option><option value="3B">3B</option><option value="3C">3C</option><option value="3D">3D</option><option value="3E">3E</option><option value="3F">3F</option>
+                    <option value="4A">4A</option><option value="4B">4B</option><option value="4C">4C</option><option value="4D">4D</option><option value="4E">4E</option><option value="4F">4F</option>
+                    <option value="5A">5A</option><option value="5B">5B</option><option value="5C">5C</option><option value="5D">5D</option><option value="5E">5E</option><option value="5F">5F</option>
+                    <option value="6A">6A</option><option value="6B">6B</option><option value="6C">6C</option><option value="6D">6D</option><option value="6E">6E</option><option value="6F">6F</option>
+                    <option value="7A">7A</option><option value="7B">7B</option><option value="7C">7C</option><option value="7D">7D</option><option value="7E">7E</option><option value="7F">7F</option>
+                    <option value="8A">8A</option><option value="8B">8B</option><option value="8C">8C</option><option value="8D">8D</option><option value="8E">8E</option><option value="8F">8F</option>
+                    <option value="9A">9A</option><option value="9B">9B</option><option value="9C">9C</option><option value="9D">9D</option><option value="9E">9E</option><option value="9F">9F</option>
+                    <option value="10A">10A</option><option value="10B">10B</option><option value="10C">10C</option><option value="10D">10D</option><option value="10E">10E</option><option value="10F">10F</option>
+                </select>
+            </div>
+            <div class="id-field">
+                <label>Month</label>
+                <input type="month" id="month${i}" value="${DEFAULT_MONTH}">
+            </div>
+        </div>
+        <div class="body">
+            <table>
+                <tr><td>Running unit</td><td><input type="number" step="0.001" id="running${i}"></td></tr>
+                <tr><td>Previous unit</td><td><input type="number" step="0.001" id="previous${i}"></td></tr>
+                <tr><td>Consume unit</td><td><input readonly id="consume${i}"></td></tr>
+                <tr><td>Conversion into Kg</td><td><input readonly id="kg${i}"></td></tr>
+                <tr><td>Price per Kg</td><td><input type="number" id="price${i}" value="142"></td></tr>
+                <tr><td>Service charge</td><td><input type="number" id="service${i}" value="50"></td></tr>
+                <tr class="total-row"><td><b>Total price</b></td><td><input readonly id="total${i}"></td></tr>
+                <tr><td>Mobile no.</td><td><input type="text" id="mobile${i}" value="01321811313"></td></tr>
+            </table>
+            <p class="note">⏰ Payable within the 5th of every month</p>
+            <div class="footer">
+                <div class="sign-box"><div class="sign-line">Received by</div></div>
+                <div class="stamp"> </div>
+                <div class="sign-box">
+                    <img src="${SIGN_URL}" height="46" alt="SAFE Community Group">
+                    <div class="sign-line">Authorized by</div>
+                </div>
+            </div>
+            <div class="footer-meta">Safe Community Group · Helpline 01713-167754 · www.safecommunitygroup.com</div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function calculate(i){
+    const running = document.getElementById(`running${i}`);
+    const previous = document.getElementById(`previous${i}`);
+    const consume = document.getElementById(`consume${i}`);
+    const kg = document.getElementById(`kg${i}`);
+    const price = document.getElementById(`price${i}`);
+    const service = document.getElementById(`service${i}`);
+    const total = document.getElementById(`total${i}`);
+
+    let runningUnit = parseFloat(running.value) || 0;
+    let previousUnit = parseFloat(previous.value) || 0;
+    let pricePerKg = parseFloat(price.value) || 0;
+    let serviceCharge = parseFloat(service.value) || 0;
+
+    if(runningUnit < previousUnit){
+        consume.value = "";
+        kg.value = "";
+        total.value = "";
+        return;
+    }
+    let consumeUnit = runningUnit - previousUnit;
+    consume.value = consumeUnit.toFixed(3);
+
+    let totalKg = consumeUnit * CONVERSION_FACTOR;
+    kg.value = totalKg.toFixed(2);
+
+    let gasBill = totalKg * pricePerKg;
+    let grandTotal = gasBill + serviceCharge;
+    total.value = Math.round(grandTotal);
+}
+
+function calculateAll(){
+    for(let i = 1; i <= TOTAL_BILLS; i++){ calculate(i); }
+}
+
+function attachListeners(i){
+    ["running","previous","price","service"].forEach(field=>{
+        document.getElementById(`${field}${i}`).addEventListener("input", ()=>calculate(i));
+    });
+}
+
+const page = document.getElementById("page");
+let html = "";
+for(let i = 1; i <= TOTAL_BILLS; i++){ html += buildBillHTML(i); }
+page.innerHTML = html;
+
+for(let i = 1; i <= TOTAL_BILLS; i++){
+    attachListeners(i);
+    calculate(i);
+}
+</script>
+
+</body>
+</html>

@@ -38,17 +38,54 @@
 
     .page{
         width:210mm;
-        height:297mm;
+        height:310mm;
         margin:0 auto 22px auto;
         background:#fff;
         display:grid;
         grid-template-columns:1fr 1fr;
         grid-template-rows:1fr 1fr;
-        gap:5mm;
+        gap:10mm;
         padding:8mm;
         box-shadow:0 18px 60px rgba(74,10,42,0.18);
         border-radius:6px;
         overflow:hidden;
+        position:relative;
+    }
+
+    /* ====== CUTTING GUIDES BETWEEN THE 4 BILLS ====== */
+    .page::before,
+    .page::after{
+        content:"✂ - - - - - - - - - - - - -  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -";
+        position:absolute;
+        color:var(--maroon-3);
+        font-size:13px;
+        letter-spacing:2px;
+        font-weight:600;
+        opacity:0.55;
+        pointer-events:none;
+        z-index:5;
+        white-space:nowrap;
+        overflow:hidden;
+    }
+
+    /* vertical cut line, centered between left/right bills */
+    .page::before{
+        top:8mm;
+        bottom:8mm;
+        left:50%;
+        width:16px;
+        transform:translateX(-50%) rotate(90deg);
+        text-align:center;
+    }
+
+    /* horizontal cut line, centered between top/bottom bills */
+    .page::after{
+        left:8mm;
+        right:8mm;
+        top:50%;
+        height:16px;
+        transform:translateY(-50%);
+        text-align:center;
     }
 
     /* ====== BILL CARD ====== */
@@ -154,13 +191,13 @@
 
     .meta-row{
         display:flex;
-        justify-content:space-between;
-        font-size:8px;
-        color:var(--maroon-3);
+        justify-content:center;
+        align-items:center;
+        font-size:11px;
+        color:var(--maroon-1);
         margin-bottom:5px;
-        font-weight:600;
-        text-transform:uppercase;
-        letter-spacing:0.35px;
+        font-weight:800;
+        letter-spacing:0.6px;
         line-height:1.15;
     }
 
@@ -223,6 +260,39 @@
 
     input[type="month"]{
         cursor:pointer;
+    }
+
+    /* Improved Flat No. select */
+    td:last-child select{
+        width:100%;
+        border:1px solid var(--gold);
+        border-radius:5px;
+        padding:2.5px 22px 2.5px 7px;
+        font-size:10.3px;
+        line-height:1.15;
+        font-weight:700;
+        font-family:inherit;
+        color:var(--maroon-1);
+        background-color:var(--soft);
+        background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'><path fill='%238E1B54' d='M0 0l5 6 5-6z'/></svg>");
+        background-repeat:no-repeat;
+        background-position:right 7px center;
+        background-size:9px 6px;
+        appearance:none;
+        -webkit-appearance:none;
+        -moz-appearance:none;
+        cursor:pointer;
+        transition:border-color .15s ease, box-shadow .15s ease;
+    }
+
+    td:last-child select:hover{
+        border-color:var(--maroon-3);
+    }
+
+    td:last-child select:focus{
+        outline:none;
+        border-color:var(--maroon-2);
+        box-shadow:0 0 0 2px rgba(142,27,84,0.18);
     }
 
     /* Total row highlight */
@@ -385,6 +455,7 @@ const CONVERSION_FACTOR = 2.35;
 const TOTAL_BILLS = 4;
 const LOGO_URL = 'edit_lpg_logo.png';
 const SIGN_URL = 'sign.png';
+const DEFAULT_MONTH = '2026-08'; // August — editable afterwards
 
 function buildBillHTML(i){
     const billNo = String(i).padStart(3,'0');
@@ -398,7 +469,7 @@ function buildBillHTML(i){
         </div>
         <div class="body">
             <div class="meta-row">
-                akhan a likha thakbe Bill 
+                Bill
             </div>
             <table>
                 <tr><td>Building Name</td><td><input type="text" id="building${i}" value="Safe Garden 1"></td></tr>
@@ -479,7 +550,7 @@ function buildBillHTML(i){
         </select>
     </td>
 </tr> 
-                <tr><td>Month</td><td><input type="month" id="month${i}"></td></tr>
+                <tr><td>Month</td><td><input type="month" id="month${i}" value="${DEFAULT_MONTH}"></td></tr>
                 <tr><td>Running Unit</td><td><input type="number" step="0.001" id="running${i}"></td></tr>
                 <tr><td>Previous Unit</td><td><input type="number" step="0.001" id="previous${i}"></td></tr>
                 <tr><td>Consume Unit</td><td><input readonly id="consume${i}"></td></tr>
