@@ -9,6 +9,9 @@
         padding:0;
         box-sizing:border-box;
         font-family:'Segoe UI', Arial, Helvetica, sans-serif;
+        -webkit-print-color-adjust:exact !important;
+        print-color-adjust:exact !important;
+        color-adjust:exact !important;
     }
 
     :root{
@@ -44,30 +47,14 @@
         display:grid;
         grid-template-columns:1fr 1fr;
         grid-template-rows:1fr 1fr;
-        gap:10mm;
-        padding:8mm;
+        gap:5mm 10mm;
+        padding:6mm;
         box-shadow:0 18px 60px rgba(74,10,42,0.18);
         border-radius:6px;
         overflow:hidden;
         position:relative;
     }
 
-    /* ====== CUTTING GUIDES BETWEEN THE 4 BILLS ====== 
-    .page::before,
-    .page::after{
-        content:"✂ - - - - - - - - - - - - -  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -";
-        position:absolute;
-        color:var(--maroon-3);
-        font-size:13px;
-        letter-spacing:2px;
-        font-weight:600;
-        opacity:0.55;
-        pointer-events:none;
-        z-index:5;
-        white-space:nowrap;
-        overflow:hidden;
-    }
-*/
     /* vertical cut line, centered between left/right bills */
     .page::before{
         top:8mm;
@@ -347,7 +334,7 @@
         width:42%;
         text-align:center;
         font-size:8.5px;
-        color:#444;
+        color:#0c0c0c;
     }
 
     .sign-line{
@@ -379,10 +366,11 @@
 
     .footer-meta{
         text-align:center;
-        font-size:7px;
-        color:#9a8b93;
+        font-size:8px;
+        color:rgb(13, 10, 13);
         margin-top:5px;
         letter-spacing:0.3px;
+        font-weight:600;
     }
 
     /* ====== BUTTONS ====== */
@@ -420,7 +408,13 @@
 
     /* ====== PRINT ====== */
     @media print{
-        body{background:#fff;padding:0;}
+        html,body{
+            background:#fff !important;
+            padding:0 !important;
+            -webkit-print-color-adjust:exact !important;
+            print-color-adjust:exact !important;
+            color-adjust:exact !important;
+        }
         .btn-area{display:none;}
         .page{
             width:210mm;
@@ -434,6 +428,18 @@
         .bill{
             box-shadow:none;
             page-break-inside:avoid;
+        }
+        /* force every colored/watermarked element to keep its color+image when printing/exporting PDF */
+        .header,
+        .bill::before,
+        td, tr:nth-child(even) td,
+        tr.total-row td,
+        .note,
+        .stamp,
+        td:last-child select{
+            -webkit-print-color-adjust:exact !important;
+            print-color-adjust:exact !important;
+            color-adjust:exact !important;
         }
     }
 
@@ -555,7 +561,7 @@ function buildBillHTML(i){
                 <tr><td>Previous Unit</td><td><input type="number" step="0.001" id="previous${i}"></td></tr>
                 <tr><td>Consume Unit</td><td><input readonly id="consume${i}"></td></tr>
                 <tr><td>Conversion into Kg</td><td><input readonly id="kg${i}"></td></tr>
-                <tr><td>Price per Kg</td><td><input type="number" id="price${i}" value="142"></td></tr>
+                <tr><td>Price per Kg</td><td><input type="number" id="price${i}" value="138"></td></tr>
                 <tr><td>Service Charge</td><td><input type="number" id="service${i}" value="50"></td></tr>
                 <tr class="total-row"><td><b>TOTAL PRICE</b></td><td><input readonly id="total${i}"></td></tr>
                 <tr><td>Mobile No</td><td><input type="text" id="mobile${i}" value="01321811313"></td></tr>
@@ -567,7 +573,7 @@ function buildBillHTML(i){
                 </div>
                 <div class="stamp"> </div>
                 <div class="sign-box">
-                    <img src="${SIGN_URL}" height="50" weight="50" alt="SAFE Community Group">
+                    <img src="${SIGN_URL}" height="40" weight="50" alt="SAFE Community Group" >
                     <div class="sign-line">Authorized By</div>
                 </div>
             </div>
