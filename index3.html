@@ -461,7 +461,7 @@ const CONVERSION_FACTOR = 2.35;
 const TOTAL_BILLS = 4;
 const LOGO_URL = 'edit_lpg_logo.png';
 const SIGN_URL = 'sign.png';
-const DEFAULT_MONTH = '2026-08'; // August — editable afterwards
+const DEFAULT_MONTH = '2026-10'; // October — editable afterwards
 
 function buildBillHTML(i){
     const billNo = String(i).padStart(3,'0');
@@ -561,7 +561,7 @@ function buildBillHTML(i){
                 <tr><td>Previous Unit</td><td><input type="number" step="0.001" id="previous${i}"></td></tr>
                 <tr><td>Consume Unit</td><td><input readonly id="consume${i}"></td></tr>
                 <tr><td>Conversion into Kg</td><td><input readonly id="kg${i}"></td></tr>
-                <tr><td>Price per Kg</td><td><input type="number" id="price${i}" value="150"></td></tr>
+                <tr><td>Price per Kg</td><td><input type="number" id="price${i}" value="165"></td></tr>
                 <tr><td>Service Charge</td><td><input type="number" id="service${i}" value="50"></td></tr>
                 <tr class="total-row"><td><b>TOTAL PRICE</b></td><td><input readonly id="total${i}"></td></tr>
                 <tr><td>Mobile No</td><td><input type="text" id="mobile${i}" value="01321811313"></td></tr>
